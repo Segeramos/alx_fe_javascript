@@ -20,8 +20,14 @@ const createAddQuoteForm = (text, category) => {
     const newQuote = { text, category };
     quotes.push(newQuote);
 
+    // Create a new quote element
     const quoteDisplay = document.getElementById('quoteDisplay');
-    quoteDisplay.innerHTML = `Added new quote: "${newQuote.text}" - <strong>Category:</strong> ${newQuote.category}`;
+    
+    const quoteElement = document.createElement('div');
+    quoteElement.textContent = `Added new quote: "${newQuote.text}" - Category: ${newQuote.category}`;
+
+    // Append the new quote element to the display
+    quoteDisplay.appendChild(quoteElement);
 };
 
 // Event listener for the form submission
