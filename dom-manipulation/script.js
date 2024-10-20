@@ -1,4 +1,5 @@
 const apiUrl = 'https://jsonplaceholder.typicode.com/posts'; // Mock API URL
+const apiUrl = 'https://jsonplaceholder.typicode.com/posts'; // Mock API URL
 
 document.addEventListener('DOMContentLoaded', () => {
     displayQuotes();
@@ -22,11 +23,11 @@ const saveQuotes = () => {
 // Function to fetch quotes from the simulated server
 const fetchQuotesFromServer = async () => {
     try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl); // Fetch data from the mock API
         if (!response.ok) {
             throw new Error('Network response was not ok ' + response.statusText);
         }
-        const data = await response.json();
+        const data = await response.json(); // Parse JSON response
         // Map the API data to match your quote structure
         return data.map(item => ({
             text: item.title,  // Use title as the quote text
@@ -34,9 +35,16 @@ const fetchQuotesFromServer = async () => {
         }));
     } catch (error) {
         console.error('Error fetching quotes:', error);
-        return [];
+        return []; // Return an empty array in case of error
     }
 };
+
+// existing function
+const syncWithServer = async () => {
+    const newQuotes = await fetchQuotesFromServer();
+    // Further logic to handle new quotes...
+};
+
 
 // Function to populate categories dynamically
 const populateCategories = () => {
