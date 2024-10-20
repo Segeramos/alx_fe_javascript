@@ -296,53 +296,82 @@ const createAddQuoteForm = async (text, category) => {
 
 // Check for the syncQuotes function
 
-
-
-document.getElementById('quoteForm').addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevent form submission
-    const text = document.getElementById('newQuoteText').value;
-    const category = document.getElementById('newQuoteCategory').value;
-    
-    createAddQuoteForm(text, category);
-
-    // Clear the input fields
-    document.getElementById('newQuoteText').value = '';
-    document.getElementById('newQuoteCategory').value = '';
-});
-
-
 const syncQuotes = async () => {
-    // First, fetch new quotes from the server
     const newQuotes = await fetchQuotesFromServer();
 
-    // Check if new quotes were fetched
     if (newQuotes.length) {
+        let conflictResolved = false;
+
         newQuotes.forEach(fetchedQuote => {
             const existingQuoteIndex = quotes.findIndex(existing => existing.text === fetchedQuote.text);
-            if (existingQuoteIndex === -1) {
+            if (existingQuoteIndex > -1) {
+                // Conflict detected: notify user
+                if (confirm(`Conflict detected for quote "${fetchedQuote.text}". Do you want to keep the server version?`)) {
+                    // If user agrees, overwrite existing quote
+                    quotes[existingQuoteIndex] = fetchedQuote;
+                    conflictResolved = true;
+                }
+            } else {
                 // If it's a new quote, add it to the local array
                 quotes.push(fetchedQuote);
             }
         });
-        
+
         // Save updated quotes to local storage
         saveQuotes();
-        displayQuotes(); // Refresh quotes display
-        populateCategories(); // Update categories
-    }
+        displayQuotes();
+        populateCategories();
 
-    // Optionally: You can also post local quotes that are not on the server
-    for (const quote of quotes) {
-        const postedQuote = await postQuoteToServer(quote);
-        if (postedQuote) {
-            console.log('Quote posted successfully:', postedQuote);
+        // Show notification based on whether conflicts occurred
+        if (conflictResolved) {
+            showNotification('Conflicts resolved and data updated from the server.');
+        } else {
+            showNotification('Quotes synced with server!');
         }
     }
 };
+
+
+
 
 // Sync quotes every 30 seconds
 setInterval(syncQuotes, 30000);
 
 // Or on a button click
 document.getElementById('syncButton').addEventListener('click', syncQuotes);
+
+// notification function 
+
+const showNotification = (message) => {
+    const notificationDiv = document.getElementById('notification');
+    notificationDiv.textContent = message;
+
+    // Automatically clear the notification after a few seconds
+    setTimeout(() => {
+        notificationDiv.textContent = '';
+    }, 3000); // Clear after 3 seconds
+};
+
+const postQuoteToServer = async (quote) => {
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(quote)
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+
+        const data = await response.json();
+        showNotification('Quote posted successfully!'); // Notify on successful post
+        return data;
+    } catch (error) {
+        console.error('Error posting quote:', error);
+        showNotification('Failed to post quote.'); // Notify on failure
+    }
+};
 
