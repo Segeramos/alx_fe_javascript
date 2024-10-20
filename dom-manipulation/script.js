@@ -12,8 +12,30 @@ const showRandomQuote = () => {
     const randomQuote = quotes[randomIndex];
 
     const quoteDisplay = document.getElementById('quoteDisplay');
-    quoteDisplay.textContent = `"${randomQuote.text}" - Category: ${randomQuote.category}`;
+    quoteDisplay.innerHTML = `"${randomQuote.text}" - <strong>Category:</strong> ${randomQuote.category}`;
 };
+
+// Function to create and add a new quote
+const createAddQuoteForm = (text, category) => {
+    const newQuote = { text, category };
+    quotes.push(newQuote);
+
+    const quoteDisplay = document.getElementById('quoteDisplay');
+    quoteDisplay.innerHTML = `Added new quote: "${newQuote.text}" - <strong>Category:</strong> ${newQuote.category}`;
+};
+
+// Event listener for the form submission
+document.getElementById('quoteForm').addEventListener('submit', (e) => {
+    e.preventDefault(); // Prevent form submission
+    const text = document.getElementById('quoteText').value;
+    const category = document.getElementById('quoteCategory').value;
+    
+    createAddQuoteForm(text, category);
+
+    // Clear the input fields
+    document.getElementById('quoteText').value = '';
+    document.getElementById('quoteCategory').value = '';
+});
 
 // Event listener for showing a random quote
 document.getElementById('randomQuoteButton').addEventListener('click', showRandomQuote);
