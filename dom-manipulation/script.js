@@ -1,5 +1,4 @@
 const apiUrl = 'https://jsonplaceholder.typicode.com/posts'; // Mock API URL
-
 // Function to load quotes from local storage
 const loadQuotes = () => {
     const storedQuotes = localStorage.getItem('quotes');
@@ -12,6 +11,22 @@ let quotes = loadQuotes();
 // Function to save quotes to local storage
 const saveQuotes = () => {
     localStorage.setItem('quotes', JSON.stringify(quotes));
+};
+
+// Function to fetch quotes from the simulated server
+const fetchQuotesFromServer = async () => {
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        // Map the API data to match your quote structure
+        return data.map(item => ({
+            text: item.title,  // Use title as the quote text
+            category: 'General' // Assign a default category
+        }));
+    } catch (error) {
+        console.error('Error fetching quotes:', error);
+        return [];
+    }
 };
 
 // Function to populate categories dynamically
@@ -136,22 +151,6 @@ const importQuotes = (event) => {
             }
         };
         reader.readAsText(file);
-    }
-};
-
-// Function to fetch quotes from the simulated server
-const fetchQuotesFromServer = async () => {
-    try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        // Map the API data to match your quote structure
-        return data.map(item => ({
-            text: item.title,  // Use title as the quote text
-            category: 'General' // Assign a default category
-        }));
-    } catch (error) {
-        console.error('Error fetching quotes:', error);
-        return [];
     }
 };
 
