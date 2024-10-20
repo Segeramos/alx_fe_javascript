@@ -12,6 +12,33 @@ const saveQuotes = () => {
     localStorage.setItem('quotes', JSON.stringify(quotes));
 };
 
+// Function to populate categories dynamically
+const populateCategories = () => {
+    const categoryFilter = document.getElementById('categoryFilter');
+    categoryFilter.innerHTML = ''; // Clear existing options
+    const uniqueCategories = [...new Set(quotes.map(quote => quote.category))];
+
+    // Add default option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'All Categories';
+    categoryFilter.appendChild(defaultOption);
+
+    uniqueCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+    });
+
+    // Restore last selected category from local storage
+    const lastCategory = localStorage.getItem('lastSelectedCategory');
+    if (lastCategory) {
+        categoryFilter.value = lastCategory;
+        filterQuotes(lastCategory); // Filter quotes based on the last selected category
+    }
+};
+
 // Function to display a random quote
 const showRandomQuote = () => {
     const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -30,14 +57,28 @@ const createAddQuoteForm = (text, category) => {
     quotes.push(newQuote);
     saveQuotes(); // Save updated quotes array to local storage
 
-    // Create a new quote element
-    const quoteDisplay = document.getElementById('quoteDisplay');
-    
-    const quoteElement = document.createElement('div');
-    quoteElement.textContent = `Added new quote: "${newQuote.text}" - Category: ${newQuote.category}`;
+    // Update categories after adding a new quote
+    populateCategories(); 
 
-    // Append the new quote element to the display
-    quoteDisplay.appendChild(quoteElement);
+    // Refresh quotes display
+    displayQuotes(); 
+};
+
+// Function to display quotes based on selected category
+const filterQuotes = (category) => {
+    const quoteDisplay = document.getElementById('quoteDisplay');
+    quoteDisplay.innerHTML = ''; // Clear existing quotes
+
+    const filteredQuotes = category ? quotes.filter(quote => quote.category === category) : quotes;
+
+    filteredQuotes.forEach(quote => {
+        const quoteElement = document.createElement('div');
+        quoteElement.textContent = `"${quote.text}" - Category: ${quote.category}`;
+        quoteDisplay.appendChild(quoteElement);
+    });
+
+    // Save last selected category to local storage
+    localStorage.setItem('lastSelectedCategory', category);
 };
 
 // Load existing quotes into the display
@@ -86,6 +127,7 @@ const importQuotes = (event) => {
                 quotes = importedQuotes; // Update quotes array
                 saveQuotes(); // Save to local storage
                 displayQuotes(); // Update the display
+                populateCategories(); // Update category filter
             } catch (error) {
                 console.error('Error parsing JSON:', error);
                 alert('Invalid JSON file. Please try again.');
@@ -117,6 +159,12 @@ document.getElementById('exportButton').addEventListener('click', exportQuotes);
 // Event listener for importing quotes
 document.getElementById('importInput').addEventListener('change', importQuotes);
 
-// Display existing quotes when the application initializes
-displayQuotes();
+// Event listener for category filtering
+document.getElementById('categoryFilter').addEventListener('change', (e) => {
+    const selectedCategory = e.target.value;
+    filterQuotes(selectedCategory);
+});
 
+// Display existing quotes and populate categories when the application initializes
+displayQuotes();
+populateCategories();
