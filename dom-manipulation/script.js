@@ -294,6 +294,9 @@ const createAddQuoteForm = async (text, category) => {
     displayQuotes(); 
 };
 
+// Check for the syncQuotes function
+
+
 
 document.getElementById('quoteForm').addEventListener('submit', (e) => {
     e.preventDefault(); // Prevent form submission
@@ -306,3 +309,40 @@ document.getElementById('quoteForm').addEventListener('submit', (e) => {
     document.getElementById('newQuoteText').value = '';
     document.getElementById('newQuoteCategory').value = '';
 });
+
+
+const syncQuotes = async () => {
+    // First, fetch new quotes from the server
+    const newQuotes = await fetchQuotesFromServer();
+
+    // Check if new quotes were fetched
+    if (newQuotes.length) {
+        newQuotes.forEach(fetchedQuote => {
+            const existingQuoteIndex = quotes.findIndex(existing => existing.text === fetchedQuote.text);
+            if (existingQuoteIndex === -1) {
+                // If it's a new quote, add it to the local array
+                quotes.push(fetchedQuote);
+            }
+        });
+        
+        // Save updated quotes to local storage
+        saveQuotes();
+        displayQuotes(); // Refresh quotes display
+        populateCategories(); // Update categories
+    }
+
+    // Optionally: You can also post local quotes that are not on the server
+    for (const quote of quotes) {
+        const postedQuote = await postQuoteToServer(quote);
+        if (postedQuote) {
+            console.log('Quote posted successfully:', postedQuote);
+        }
+    }
+};
+
+// Sync quotes every 30 seconds
+setInterval(syncQuotes, 30000);
+
+// Or on a button click
+document.getElementById('syncButton').addEventListener('click', syncQuotes);
+
