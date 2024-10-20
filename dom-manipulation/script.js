@@ -1,3 +1,5 @@
+const apiUrl = 'https://jsonplaceholder.typicode.com/posts'; // Mock API URL
+
 // Function to load quotes from local storage
 const loadQuotes = () => {
     const storedQuotes = localStorage.getItem('quotes');
@@ -137,6 +139,60 @@ const importQuotes = (event) => {
     }
 };
 
+// Function to fetch quotes from the simulated server
+const fetchQuotesFromServer = async () => {
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        // Map the API data to match your quote structure
+        return data.map(item => ({
+            text: item.title,  // Use title as the quote text
+            category: 'General' // Assign a default category
+        }));
+    } catch (error) {
+        console.error('Error fetching quotes:', error);
+        return [];
+    }
+};
+
+// Function to sync fetched quotes with local storage
+const syncWithServer = async () => {
+    const newQuotes = await fetchQuotesFromServer();
+    if (newQuotes.length) {
+        let conflictResolved = false;
+
+        newQuotes.forEach(fetchedQuote => {
+            const existingQuoteIndex = quotes.findIndex(existing => existing.text === fetchedQuote.text);
+            if (existingQuoteIndex > -1) {
+                // Conflict detected: notify user
+                if (confirm(`Conflict detected for quote "${fetchedQuote.text}". Do you want to keep the server version?`)) {
+                    // If user agrees, overwrite existing quote with the server's version
+                    quotes[existingQuoteIndex] = fetchedQuote;
+                    conflictResolved = true;
+                }
+            } else {
+                // If it's a new quote, add it to the local array
+                quotes.push(fetchedQuote);
+            }
+        });
+
+        if (conflictResolved) {
+            alert('Conflicts resolved and data updated from the server.');
+            saveQuotes(); // Save to local storage
+            displayQuotes(); // Refresh quotes display
+            populateCategories(); // Update categories after syncing
+        } else {
+            alert('Data updated from the server without conflicts.');
+            saveQuotes(); // Save to local storage
+            displayQuotes(); // Refresh quotes display
+            populateCategories(); // Update categories after syncing
+        }
+    }
+};
+
+// Set interval for syncing with the server every 30 seconds
+setInterval(syncWithServer, 30000);
+
 // Event listener for the form submission
 document.getElementById('quoteForm').addEventListener('submit', (e) => {
     e.preventDefault(); // Prevent form submission
@@ -164,8 +220,7 @@ document.getElementById('categoryFilter').addEventListener('change', (e) => {
     const selectedCategory = e.target.value;
     filterQuotes(selectedCategory);
 });
+
 // Display existing quotes and populate categories when the application initializes
 displayQuotes();
 populateCategories();
-
-
