@@ -1,4 +1,10 @@
 const apiUrl = 'https://jsonplaceholder.typicode.com/posts'; // Mock API URL
+
+document.addEventListener('DOMContentLoaded', () => {
+    displayQuotes();
+    populateCategories();
+});
+
 // Function to load quotes from local storage
 const loadQuotes = () => {
     const storedQuotes = localStorage.getItem('quotes');
@@ -37,7 +43,7 @@ const populateCategories = () => {
 
     // Add default option
     const defaultOption = document.createElement('option');
-    defaultOption.value = '';
+    defaultOption.value = 'all';
     defaultOption.textContent = 'All Categories';
     categoryFilter.appendChild(defaultOption);
 
@@ -56,8 +62,13 @@ const populateCategories = () => {
     }
 };
 
-// Function to display a random quote
+// Function to show a random quote
 const showRandomQuote = () => {
+    if (quotes.length === 0) {
+        quoteDisplay.innerHTML = 'No quotes available.';
+        return;
+    }
+
     const randomIndex = Math.floor(Math.random() * quotes.length);
     const randomQuote = quotes[randomIndex];
 
@@ -86,7 +97,9 @@ const filterQuotes = (category) => {
     const quoteDisplay = document.getElementById('quoteDisplay');
     quoteDisplay.innerHTML = ''; // Clear existing quotes
 
-    const filteredQuotes = category ? quotes.filter(quote => quote.category === category) : quotes;
+    const filteredQuotes = category && category !== 'all' 
+        ? quotes.filter(quote => quote.category === category) 
+        : quotes;
 
     filteredQuotes.forEach(quote => {
         const quoteElement = document.createElement('div');
@@ -195,18 +208,18 @@ setInterval(syncWithServer, 30000);
 // Event listener for the form submission
 document.getElementById('quoteForm').addEventListener('submit', (e) => {
     e.preventDefault(); // Prevent form submission
-    const text = document.getElementById('quoteText').value;
-    const category = document.getElementById('quoteCategory').value;
+    const text = document.getElementById('newQuoteText').value;
+    const category = document.getElementById('newQuoteCategory').value;
     
     createAddQuoteForm(text, category);
 
     // Clear the input fields
-    document.getElementById('quoteText').value = '';
-    document.getElementById('quoteCategory').value = '';
+    document.getElementById('newQuoteText').value = '';
+    document.getElementById('newQuoteCategory').value = '';
 });
 
 // Event listener for showing a random quote
-document.getElementById('randomQuoteButton').addEventListener('click', showRandomQuote);
+document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
 // Event listener for exporting quotes
 document.getElementById('exportButton').addEventListener('click', exportQuotes);
