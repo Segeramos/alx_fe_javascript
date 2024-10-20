@@ -23,6 +23,9 @@ const saveQuotes = () => {
 const fetchQuotesFromServer = async () => {
     try {
         const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
         const data = await response.json();
         // Map the API data to match your quote structure
         return data.map(item => ({
