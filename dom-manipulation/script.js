@@ -247,3 +247,62 @@ document.getElementById('categoryFilter').addEventListener('change', (e) => {
 // Display existing quotes and populate categories when the application initializes
 displayQuotes();
 populateCategories();
+
+
+// Function to post a new quote to the server
+const postQuoteToServer = async (quote) => {
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST', // Set the request method to POST
+            headers: {
+                'Content-Type': 'application/json' // Set the content type to JSON
+            },
+            body: JSON.stringify(quote) // Convert the quote object to JSON
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+
+        const data = await response.json(); // Parse the JSON response
+        return data; // Return the created quote data (or handle it as needed)
+    } catch (error) {
+        console.error('Error posting quote:', error);
+    }
+};
+
+
+const createAddQuoteForm = async (text, category) => {
+    const newQuote = { text, category };
+
+    // First, add the new quote to local storage
+    quotes.push(newQuote);
+    saveQuotes(); // Save updated quotes array to local storage
+
+    // Post the new quote to the server
+    const postedQuote = await postQuoteToServer(newQuote);
+    
+    if (postedQuote) {
+        // Optionally, handle the postedQuote response here
+        console.log('Quote posted successfully:', postedQuote);
+    }
+
+    // Update categories after adding a new quote
+    populateCategories(); 
+
+    // Refresh quotes display
+    displayQuotes(); 
+};
+
+
+document.getElementById('quoteForm').addEventListener('submit', (e) => {
+    e.preventDefault(); // Prevent form submission
+    const text = document.getElementById('newQuoteText').value;
+    const category = document.getElementById('newQuoteCategory').value;
+    
+    createAddQuoteForm(text, category);
+
+    // Clear the input fields
+    document.getElementById('newQuoteText').value = '';
+    document.getElementById('newQuoteCategory').value = '';
+});
